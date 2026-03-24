@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Answer Checker</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      margin: 20px;
+    }
+    td {
+      border: 1px solid black;
+      padding: 5px;
+      text-align: center;
+    }
+    input {
+      width: 40px;
+      text-align: center;
+      font-size: 18px;
+    }
+    .correct {
+      background-color: lightgreen;
+    }
+    .wrong {
+      background-color: lightcoral;
+    }
+    .number {
+      width: 40px;
+      background-color: #eee;
+      font-weight: bold;
+    }
+    #score {
+      margin: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    #controls {
+      margin: 20px;
+    }
+    button {
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="controls">
+  <button id="clearColumn2">Clear Column 2</button>
+</div>
+
+<table id="table"></table>
+<div id="score">Score: 0 / 0 (0%)</div>
+
+<script>
+const rows = 30; // number of rows
+const table = document.getElementById("table");
+const scoreDiv = document.getElementById("score");
+const clearButton = document.getElementById("clearColumn2");
+
+let totalAnswered = 0;
+let totalCorrect = 0;
+
+function updateScore() {
+  let percent = totalAnswered ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+  scoreDiv.textContent = `Score: ${totalCorrect} / ${totalAnswered} (${percent}%)`;
+}
+
+for (let i = 0; i < rows; i++) {
+  let tr = document.createElement("tr");
+
+  // Row number column
+  let numTd = document.createElement("td");
+  numTd.textContent = i + 1;
+  numTd.className = "number";
+
+  let td1 = document.createElement("td");
+  let td2 = document.createElement("td");
+
+  let input1 = document.createElement("input");
+  let input2 = document.createElement("input");
+
+  input1.maxLength = 1;
+  input2.maxLength = 1;
+
+  function check() {
+    let val1 = input1.value.toUpperCase();
+    let val2 = input2.value.toUpperCase();
+
+    input1.value = val1;
+    input2.value = val2;
+
+    totalAnswered = 0;
+    totalCorrect = 0;
+
+    for (let r = 0; r < rows; r++) {
+      let rowInputs = table.rows[r].querySelectorAll("input");
+      let v1 = rowInputs[0].value.toUpperCase();
+      let v2 = rowInputs[1].value.toUpperCase();
+      
+      // Reset classes
+      rowInputs[0].classList.remove("correct", "wrong");
+      rowInputs[1].classList.remove("correct", "wrong");
+
+      if (v1 && v2) {
+        totalAnswered++;
+        if (v1 === v2) {
+          totalCorrect++;
+          rowInputs[0].classList.add("correct");
+          rowInputs[1].classList.add("correct");
+        } else {
+          rowInputs[0].classList.add("wrong");
+          rowInputs[1].classList.add("wrong");
+        }
+      }
+    }
+    updateScore();
+  }
+
+  input1.addEventListener("input", check);
+  input2.addEventListener("input", check);
+
+  function moveDown(e, col) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      let nextRow = table.rows[i + 1];
+      if (nextRow) {
+        nextRow.cells[col + 1].firstChild.focus(); // +1 for number column
+      }
+    }
+  }
+
+  input1.addEventListener("keydown", (e) => moveDown(e, 0));
+  input2.addEventListener("keydown", (e) => moveDown(e, 1));
+
+  td1.appendChild(input1);
+  td2.appendChild(input2);
+
+  tr.appendChild(numTd);
+  tr.appendChild(td1);
+  tr.appendChild(td2);
+  table.appendChild(tr);
+}
+
+// Clear second column button
+clearButton.addEventListener("click", () => {
+  for (let i = 0; i < rows; i++) {
+    let input2 = table.rows[i].cells[2].firstChild;
+    input2.value = "";
+    input2.classList.remove("correct", "wrong");
+  }
+  totalAnswered = 0;
+  totalCorrect = 0;
+  updateScore();
+});
+</script>
+
+</body>
+</html>
